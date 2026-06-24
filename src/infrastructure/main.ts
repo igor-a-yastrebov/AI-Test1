@@ -14,7 +14,7 @@ const WINDOW_CONFIG = {
 
 function createWindow(): void {
   const win = new BrowserWindow(WINDOW_CONFIG);
-  win.loadFile(path.join(__dirname, '..', '..', 'src', 'presentation', 'index.html'));
+  win.loadFile(path.join(__dirname, '..', 'presentation', 'index.html'));
   win.setMenuBarVisibility(false);
 }
 
