@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(run)",
+      "Skill(run:*)",
+      "PowerShell($env:NODE_PATH = \"c:\\\\_PROJECTS\\\\AI Test1\\\\node_modules\"; node \"C:\\\\Users\\\\YASTRE~1\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c---PROJECTS-AI-Test1\\\\720df40f-d032-4ec0-8b2a-4b2d7c49e208\\\\scratchpad\\\\driver.mjs\" 2>&1)",
+      "PowerShell(& \"c:\\\\_PROJECTS\\\\AI Test1\\\\node_modules\\\\electron\\\\dist\\\\electron.exe\" --version 2>&1)",
+      "PowerShell(Start-Sleep -Seconds 4; Add-Type -AssemblyName System.Windows.Forms; Add-Type -AssemblyName System.Drawing; $screen = [System.Windows.Forms.Screen]::PrimaryScreen; $bmp = New-Object System.Drawing.Bitmap\\($screen.Bounds.Width, $screen.Bounds.Height\\); $g = [System.Drawing.Graphics]::FromImage\\($bmp\\); $g.CopyFromScreen\\($screen.Bounds.Location, [System.Drawing.Point]::Empty, $screen.Bounds.Size\\); $bmp.Save\\(\"c:\\\\_PROJECTS\\\\AI Test1\\\\shot-screen.png\"\\); $g.Dispose\\(\\); $bmp.Dispose\\(\\); Write-Output \"Screenshot saved\")",
+      "PowerShell(Get-Process -Id 4736 -ErrorAction SilentlyContinue)",
+      "PowerShell(cd \"c:\\\\_PROJECTS\\\\AI Test1\" && $env:ELECTRON_RUN_AS_NODE; Write-Output \"ELECTRON_RUN_AS_NODE: [$env:ELECTRON_RUN_AS_NODE]\")",
+      "PowerShell(cd \"c:\\\\_PROJECTS\\\\AI Test1\"; $env:ELECTRON_RUN_AS_NODE = $null; $proc = Start-Process -FilePath \"node_modules\\\\electron\\\\dist\\\\electron.exe\" -ArgumentList \"dist\\\\infrastructure\\\\main.js\" -WorkingDirectory \"c:\\\\_PROJECTS\\\\AI Test1\" -PassThru; Start-Sleep -Seconds 4; $proc | Select-Object Id, HasExited)",
+      "PowerShell(Add-Type -AssemblyName System.Windows.Forms; Add-Type -AssemblyName System.Drawing; $screen = [System.Windows.Forms.Screen]::PrimaryScreen; $bmp = New-Object System.Drawing.Bitmap\\($screen.Bounds.Width, $screen.Bounds.Height\\); $g = [System.Drawing.Graphics]::FromImage\\($bmp\\); $g.CopyFromScreen\\($screen.Bounds.Location, [System.Drawing.Point]::Empty, $screen.Bounds.Size\\); $bmp.Save\\(\"c:\\\\_PROJECTS\\\\AI Test1\\\\shot-app.png\"\\); $g.Dispose\\(\\); $bmp.Dispose\\(\\); \"done\")",
+      "PowerShell(cd \"c:\\\\_PROJECTS\\\\AI Test1\"; $env:ELECTRON_RUN_AS_NODE = $null; $proc = Start-Process -FilePath \"node_modules\\\\electron\\\\dist\\\\electron.exe\" -ArgumentList \"dist\\\\infrastructure\\\\main.js\",\"--remote-debugging-port=9222\" -WorkingDirectory \"c:\\\\_PROJECTS\\\\AI Test1\" -PassThru; Start-Sleep -Seconds 5; Write-Output \"PID: $\\($proc.Id\\), HasExited: $\\($proc.HasExited\\)\")",
+      "PowerShell(Invoke-RestMethod -Uri \"http://localhost:9222/json\" -TimeoutSec 5 2>&1)",
+      "PowerShell(node --version)",
+      "PowerShell(Stop-Process -Name \"electron\" -Force -ErrorAction SilentlyContinue; Start-Sleep -Seconds 1; cd \"c:\\\\_PROJECTS\\\\AI Test1\"; $env:ELECTRON_RUN_AS_NODE = $null; $proc = Start-Process -FilePath \"node_modules\\\\electron\\\\dist\\\\electron.exe\" -ArgumentList \"dist\\\\infrastructure\\\\main.js\",\"--remote-debugging-port=9222\" -WorkingDirectory \"c:\\\\_PROJECTS\\\\AI Test1\" -PassThru; Start-Sleep -Seconds 5; \"PID: $\\($proc.Id\\), HasExited: $\\($proc.HasExited\\)\")"
+    ]
+  }
+}
