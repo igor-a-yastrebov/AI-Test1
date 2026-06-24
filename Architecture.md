@@ -10,29 +10,45 @@
 
 ---
 
+## Процессная модель Electron
+
+Electron запускает два независимых процесса:
+
+| Процесс | Файлы | Роль |
+|---|---|---|
+| **Main process** | `src/infrastructure/main.ts` | Жизненный цикл приложения, создание окна |
+| **Renderer process** | `src/presentation/app.ts`, `calcView.ts`, `index.html` | UI калькулятора |
+
+Общение между процессами (IPC) в текущей версии не используется. При необходимости добавляется через `ipcMain` / `ipcRenderer` не затрагивая Domain и Application слои.
+
+---
+
 ## Слои (Layers)
 
 ### L-1. Domain — `CalcEngine`
 Ядро приложения. Чистые TypeScript-функции без каких-либо внешних зависимостей.
 - Определяет типы `CalcState` и `CalcAction`.
+- Определяет порт `ICalcStore` — интерфейс, через который Presentation взаимодействует с Application.
 - Реализует функцию `reduce(state, action): CalcState`.
 - Не знает ни о DOM, ни об Electron, ни о том, кто его вызывает.
 
 ### L-2. Application — `CalcStore`
 Контейнер состояния. Связывает Domain и Presentation.
+- Реализует интерфейс `ICalcStore`.
 - Хранит текущий экземпляр `CalcState`.
 - Принимает `CalcAction`, передаёт в `CalcEngine.reduce()`, сохраняет результат.
 - Уведомляет подписчиков при каждом изменении состояния.
 - Не содержит вычислительной логики и не знает о DOM.
 
-### L-3. Presentation — `CalcView`
-Слой отображения. Работает только с DOM и `CalcStore`.
-- Подписывается на `CalcStore`, отрисовывает актуальный `CalcState` в DOM.
-- Преобразует события нажатия кнопок в `CalcAction` и передаёт в `CalcStore.dispatch()`.
+### L-3. Presentation — `CalcView` + `app.ts`
+Слой отображения. Работает только с DOM и `ICalcStore`.
+- **`app.ts`** — composition root рендерера: создаёт `CalcStore` и `CalcView`, связывает их, отвечает за вызов `CalcView.destroy()` при завершении.
+- **`CalcView`** — подписывается на `ICalcStore`, отрисовывает актуальный `CalcState` в DOM, преобразует события нажатия кнопок в `CalcAction` и передаёт в `ICalcStore.dispatch()`.
 - Не содержит вычислительной логики.
+- Зависит от интерфейса `ICalcStore`, а не от конкретного класса `CalcStore`.
 
 ### L-4. Infrastructure — Electron
-Точка входа приложения.
+Точка входа приложения (main process).
 - `main.ts` отвечает за жизненный цикл Electron: создание `BrowserWindow`, реакция на события `app`.
 - Не содержит логики калькулятора.
 
@@ -65,16 +81,35 @@
 ```
 src/
 ├── domain/
-│   └── calcEngine.ts      ← CalcState, CalcAction, reduce()
+│   ├── calcEngine.ts      ← CalcState, CalcAction, reduce()
+│   └── ports.ts           ← ICalcStore (порт для Presentation)
 ├── application/
-│   └── calcStore.ts       ← CalcStore: dispatch / getState / subscribe
+│   └── calcStore.ts       ← CalcStore: реализует ICalcStore
 ├── presentation/
-│   ├── calcView.ts        ← подписка на store, рендер DOM, обработка событий
+│   ├── app.ts             ← composition root рендерера
+│   ├── calcView.ts        ← подписка на ICalcStore, рендер DOM, события
 │   ├── index.html
 │   └── styles.css
 └── infrastructure/
     └── main.ts            ← Electron BrowserWindow, app lifecycle
 ```
+
+---
+
+## Состояние калькулятора (CalcState)
+
+`CalcState` — иммутабельный объект со следующими полями:
+
+| Поле | Тип | Назначение |
+|---|---|---|
+| `display` | `string` | Строка, отображаемая на табло. В штатном режиме — текущее число; при ошибке — `'Ошибка'` |
+| `acc` | `number \| null` | Накопленный первый операнд (null до первого оператора) |
+| `op` | `string \| null` | Текущий оператор (`+`, `-`, `*`, `/`) |
+| `rawInput` | `string` | Строка текущего вводимого числа |
+| `fresh` | `boolean` | Флаг: следующий ввод начинает новое число |
+| `justResult` | `boolean` | Флаг: последнее действие — вычисление результата |
+
+**Состояние ошибки** представлено через `display: 'Ошибка'` и полным сбросом остальных полей до начального состояния (`INITIAL_STATE`). Отдельного поля `error` нет — рендерер определяет ошибку по значению `display`.
 
 ---
 
@@ -84,9 +119,9 @@ src/
 
 **AR-G-1.** Зависимости направлены строго вниз: Infrastructure → Presentation → Application → Domain. Обратные зависимости запрещены.
 
-**AR-G-2.** Все публичные интерфейсы (`CalcState`, `CalcAction`) определяются в domain-слое и не дублируются в других слоях.
+**AR-G-2.** Все публичные интерфейсы (`CalcState`, `CalcAction`, `ICalcStore`) определяются в domain-слое и не дублируются в других слоях.
 
-**AR-G-3.** Слои взаимодействуют через интерфейсы, а не через прямые импорты конкретных классов (за исключением Infrastructure, который является точкой сборки).
+**AR-G-3.** Слои взаимодействуют через интерфейсы, определённые в domain-слое. `CalcView` зависит от `ICalcStore`, а не от конкретного класса `CalcStore`.
 
 ---
 
@@ -96,7 +131,11 @@ src/
 
 **AR-D-2.** Функция `reduce(state: CalcState, action: CalcAction): CalcState` является чистой (pure function): детерминирована, не производит побочных эффектов, не мутирует входящий объект состояния.
 
-**AR-D-3.** `CalcAction` реализован как дискриминированное объединение (discriminated union) со строго типизированными вариантами для каждого действия пользователя (`DigitAction`, `OperatorAction`, `EqualsAction`, `ClearAction`).
+**AR-D-3.** `CalcAction` реализован как discriminated union по полю `type` со следующими вариантами:
+- `{ type: 'DIGIT'; value: string }`
+- `{ type: 'OPERATOR'; op: string }`
+- `{ type: 'EQUALS' }`
+- `{ type: 'CLEAR' }`
 
 **AR-D-4.** `CalcState` — неизменяемый (immutable) объект. Каждый вызов `reduce` возвращает новый экземпляр `CalcState`; мутация входящего состояния запрещена.
 
@@ -106,21 +145,23 @@ src/
 
 ### Application (AR-A)
 
-**AR-A-1.** `CalcStore` предоставляет публичный API из трёх методов: `dispatch(action: CalcAction): void`, `getState(): CalcState`, `subscribe(listener: () => void): () => void`.
+**AR-A-1.** `CalcStore` предоставляет публичный API из трёх методов: `dispatch(action: CalcAction): void`, `getState(): CalcState`, `subscribe(listener: () => void): () => void` — в соответствии с интерфейсом `ICalcStore`.
 
 **AR-A-2.** `CalcStore` является единственным источником истины (single source of truth): состояние приложения хранится в одном месте.
 
-**AR-A-3.** Метод `subscribe` возвращает функцию отписки (unsubscribe). `CalcView` обязан вызвать её при уничтожении компонента.
+**AR-A-3.** Метод `subscribe` возвращает функцию отписки (unsubscribe). `app.ts` обязан вызвать её при уничтожении `CalcView`.
 
 ---
 
 ### Presentation (AR-P)
 
-**AR-P-1.** `CalcView` не хранит вычислительное состояние (операнды, оператор, флаги). Единственный источник данных для рендера — объект `CalcState` из `CalcStore`.
+**AR-P-1.** `CalcView` не хранит вычислительное состояние (операнды, оператор, флаги). Единственный источник данных для рендера — объект `CalcState` из `ICalcStore`.
 
-**AR-P-2.** Все обновления DOM производятся исключительно в callback подписки на `CalcStore`, а не напрямую в обработчиках событий.
+**AR-P-2.** Все обновления DOM производятся исключительно в callback подписки на `ICalcStore`, а не напрямую в обработчиках событий.
 
-**AR-P-3.** `CalcView` не обращается к `CalcEngine` напрямую — только через `CalcStore.dispatch()`.
+**AR-P-3.** `CalcView` не обращается к `CalcEngine` напрямую — только через `ICalcStore.dispatch()`.
+
+**AR-P-4.** `app.ts` является владельцем экземпляра `CalcView` и обязан вызвать `CalcView.destroy()` при завершении работы приложения.
 
 ---
 
