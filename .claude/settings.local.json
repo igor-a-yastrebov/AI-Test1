@@ -13,7 +13,17 @@
       "PowerShell(cd \"c:\\\\_PROJECTS\\\\AI Test1\"; $env:ELECTRON_RUN_AS_NODE = $null; $proc = Start-Process -FilePath \"node_modules\\\\electron\\\\dist\\\\electron.exe\" -ArgumentList \"dist\\\\infrastructure\\\\main.js\",\"--remote-debugging-port=9222\" -WorkingDirectory \"c:\\\\_PROJECTS\\\\AI Test1\" -PassThru; Start-Sleep -Seconds 5; Write-Output \"PID: $\\($proc.Id\\), HasExited: $\\($proc.HasExited\\)\")",
       "PowerShell(Invoke-RestMethod -Uri \"http://localhost:9222/json\" -TimeoutSec 5 2>&1)",
       "PowerShell(node --version)",
-      "PowerShell(Stop-Process -Name \"electron\" -Force -ErrorAction SilentlyContinue; Start-Sleep -Seconds 1; cd \"c:\\\\_PROJECTS\\\\AI Test1\"; $env:ELECTRON_RUN_AS_NODE = $null; $proc = Start-Process -FilePath \"node_modules\\\\electron\\\\dist\\\\electron.exe\" -ArgumentList \"dist\\\\infrastructure\\\\main.js\",\"--remote-debugging-port=9222\" -WorkingDirectory \"c:\\\\_PROJECTS\\\\AI Test1\" -PassThru; Start-Sleep -Seconds 5; \"PID: $\\($proc.Id\\), HasExited: $\\($proc.HasExited\\)\")"
+      "PowerShell(Stop-Process -Name \"electron\" -Force -ErrorAction SilentlyContinue; Start-Sleep -Seconds 1; cd \"c:\\\\_PROJECTS\\\\AI Test1\"; $env:ELECTRON_RUN_AS_NODE = $null; $proc = Start-Process -FilePath \"node_modules\\\\electron\\\\dist\\\\electron.exe\" -ArgumentList \"dist\\\\infrastructure\\\\main.js\",\"--remote-debugging-port=9222\" -WorkingDirectory \"c:\\\\_PROJECTS\\\\AI Test1\" -PassThru; Start-Sleep -Seconds 5; \"PID: $\\($proc.Id\\), HasExited: $\\($proc.HasExited\\)\")",
+      "Bash(npm run *)",
+      "PowerShell(Set-Location \"D:\\\\WORK\\\\IgorLikbez\\\\AI Test1\"; $env:ELECTRON_RUN_AS_NODE = $null; Start-Process -FilePath \".\\\\node_modules\\\\.bin\\\\electron.cmd\" -ArgumentList \"dist/infrastructure/main.js\" -WorkingDirectory \"D:\\\\WORK\\\\IgorLikbez\\\\AI Test1\")",
+      "Bash(cp \"d:/WORK/IgorLikbez/AI Test1/REQUIREMENTS.md\" \"d:/WORK/IgorLikbez/AI Test1/.claude/snapshots/requirements.snapshot.md\")",
+      "Bash(find . -iname \"*.spec.ts\" -not -path \"*/node_modules/*\")",
+      "Bash(find . -iname \"e2e\" -not -path \"*/node_modules/*\" -type d)",
+      "Bash(ELECTRON_RUN_AS_NODE= npx playwright test tests/c9-ln.spec.ts)",
+      "Bash(ELECTRON_RUN_AS_NODE= npx playwright test)"
+    ],
+    "additionalDirectories": [
+      "d:\\WORK\\IgorLikbez\\AI Test1\\.claude\\snapshots"
     ]
   }
 }

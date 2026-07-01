@@ -12,7 +12,8 @@ export type CalcAction =
   | { type: 'OPERATOR'; op: string }
   | { type: 'EQUALS' }
   | { type: 'CLEAR' }
-  | { type: 'SQRT' };
+  | { type: 'SQRT' }
+  | { type: 'LN' };
 
 export const INITIAL_STATE: CalcState = {
   display: '0.00',
@@ -106,6 +107,19 @@ export function reduce(state: CalcState, action: CalcAction): CalcState {
     case 'SQRT': {
       const arg = numVal(state.rawInput);
       const res = Math.cbrt(arg);
+      return {
+        ...INITIAL_STATE,
+        rawInput: res.toString(),
+        fresh: false,
+        justResult: true,
+        display: fmt(res),
+      };
+    }
+
+    case 'LN': {
+      const arg = numVal(state.rawInput);
+      if (arg <= 0) return { ...INITIAL_STATE, display: 'Ошибка' };
+      const res = Math.log(arg);
       return {
         ...INITIAL_STATE,
         rawInput: res.toString(),

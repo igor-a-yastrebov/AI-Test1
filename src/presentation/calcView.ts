@@ -41,6 +41,8 @@ export class CalcView {
       action = { type: 'EQUALS' };
     } else if (key === 'SQRT') {
       action = { type: 'SQRT' };
+    } else if (key === 'LN') {
+      action = { type: 'LN' };
     } else if (OPERATORS.has(key)) {
       action = { type: 'OPERATOR', op: key };
     } else {
